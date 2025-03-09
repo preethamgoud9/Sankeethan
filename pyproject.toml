@@ -1,0 +1,40 @@
+[tool.poetry]
+name = "pubmed-papers"
+version = "0.1.0"
+description = "Fetch research papers from PubMed with authors affiliated with pharmaceutical or biotech companies"
+authors = ["Your Name <your.email@example.com>"]
+readme = "README.md"
+license = "MIT"
+repository = "https://github.com/yourusername/pubmed-papers"
+packages = [{include = "pubmed_papers"}]
+
+[tool.poetry.dependencies]
+python = ">=3.8.1,<4.0"
+
+[tool.poetry.dev-dependencies]
+pytest = "^7.0.0"
+black = "^23.1.0"
+mypy = "^1.0.0"
+flake8 = "^6.0.0"
+
+[tool.poetry.scripts]
+get-papers-list = "pubmed_papers.cli:run_cli"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 88
+target-version = ["py38"]
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
