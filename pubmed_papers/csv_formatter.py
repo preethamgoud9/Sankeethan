@@ -13,6 +13,7 @@ class CSVFormatter:
     Format paper data as CSV.
     """
     
+    # Exact column names as specified in the requirements
     CSV_HEADERS = [
         "PubmedID", 
         "Title", 
@@ -66,7 +67,7 @@ class CSVFormatter:
         """
         writer = csv.writer(output)
         
-        # Write header
+        # Write header with exact column names as specified
         writer.writerow(self.CSV_HEADERS)
         
         # Write data rows

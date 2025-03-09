@@ -1,4 +1,3 @@
-
 """
 Command-line interface for fetching and filtering PubMed papers.
 """
@@ -6,6 +5,10 @@ import argparse
 import logging
 import sys
 from typing import List, Optional
+import click
+import requests
+from Bio import Entrez
+import pandas as pd
 
 from .pubmed_client import PubMedClient
 from .affiliation_classifier import AffiliationClassifier
@@ -68,6 +71,82 @@ def parse_args(args: Optional[List[str]] = None) -> argparse.Namespace:
     return parser.parse_args(args)
 
 
+def process_paper(handle):
+    paper = {
+        'PubmedID': None,
+        'Title': None,
+        'PublicationDate': None,
+        'NonAcademicAuthors': [],
+        'CompanyAffiliations': [],
+        'CorrespondingAuthorEmail': None
+    }
+
+    for line in handle:
+        if line.startswith('PMID-'):
+            paper['PubmedID'] = line.split()[-1]
+        elif line.startswith('TI  -'):
+            paper['Title'] = line[5:].strip()
+        elif line.startswith('DP  -'):
+            paper['PublicationDate'] = line[5:].strip()
+        elif line.startswith('FAU -'):
+            author = line[5:].strip()
+            if is_pharma_biotech_author(author):
+                paper['NonAcademicAuthors'].append(author)
+        elif line.startswith('AD  -'):
+            affiliation = line[5:].strip()
+            if is_pharma_biotech_affiliation(affiliation):
+                paper['CompanyAffiliations'].append(affiliation)
+        elif line.startswith('EM  -'):
+            paper['CorrespondingAuthorEmail'] = line[5:].strip()
+
+    return paper
+
+
+def is_pharma_biotech_author(author):
+    pharma_keywords = ['pharma', 'biotech', 'pharmaceutical', 'biotechnology']
+    return any(keyword.lower() in author.lower() for keyword in pharma_keywords)
+
+
+def is_pharma_biotech_affiliation(affiliation):
+    company_keywords = [
+        'pharma', 'biotech', 'pharmaceutical', 'biotechnology',
+        'inc.', 'ltd', 'corporation', 'company'
+    ]
+    academic_keywords = [
+        'university', 'college', 'institute', 'hospital',
+        'research center', 'academy'
+    ]
+    
+    has_company = any(keyword.lower() in affiliation.lower() for keyword in company_keywords)
+    has_academic = any(keyword.lower() in affiliation.lower() for keyword in academic_keywords)
+    
+    return has_company and not has_academic
+
+
+@click.command()
+@click.argument('query')
+@click.option('--file', default='results.csv', help='Output CSV file')
+@click.option('--max-results', default=100, help='Maximum number of results')
+@click.option('--debug', is_flag=True, help='Enable debug logging')
+def cli_main(query, file, max_results, debug):
+    Entrez.email = 'your_email@example.com'
+    handle = Entrez.esearch(db='pubmed', term=query, retmax=max_results)
+    record = Entrez.read(handle)
+    handle.close()
+
+    id_list = record['IdList']
+    papers = []
+
+    for pubmed_id in id_list:
+        handle = Entrez.efetch(db='pubmed', id=pubmed_id, rettype='medline', retmode='text')
+        paper = process_paper(handle)
+        papers.append(paper)
+        handle.close()
+
+    df = pd.DataFrame(papers)
+    df.to_csv(file, index=False)
+
+
 def main(args: Optional[List[str]] = None) -> int:
     """
     Main entry point for the command-line interface.
@@ -124,7 +203,7 @@ def main(args: Optional[List[str]] = None) -> int:
 
 def run_cli() -> None:
     """Function that Poetry will use as an entry point."""
-    sys.exit(main())
+    cli_main()
 
 
 if __name__ == "__main__":

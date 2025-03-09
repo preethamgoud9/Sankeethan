@@ -1,18 +1,23 @@
-
 # PubMed Papers
 
 A Python command-line tool for fetching research papers from PubMed with authors affiliated with pharmaceutical or biotech companies.
 
 ## Overview
 
-This tool allows you to search for papers on PubMed and identify those with at least one author affiliated with a pharmaceutical or biotech company. The results are returned as a CSV file.
+This tool searches PubMed for papers based on user-specified queries, identifies papers with at least one author affiliated with a pharmaceutical or biotech company, and outputs the results as a CSV file with the required columns.
 
 ## Features
 
 - Search PubMed using its full query syntax
 - Identify authors affiliated with pharmaceutical or biotech companies
 - Extract corresponding author emails
-- Output results as a CSV file or to the console
+- Output results as a CSV file with the following columns:
+  - PubmedID
+  - Title
+  - Publication Date
+  - Non-academic Author(s)
+  - Company Affiliation(s)
+  - Corresponding Author Email
 
 ## Installation
 
@@ -21,16 +26,33 @@ This tool allows you to search for papers on PubMed and identify those with at l
 - Python 3.8 or higher
 - [Poetry](https://python-poetry.org/docs/#installation) package manager
 
-### Installing with Poetry
+### Setup
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/pubmed-papers.git
-cd pubmed-papers
+git clone https://github.com/preethamgoud9/Sankeethan.git
+cd Sankeethan
 
 # Install dependencies
 poetry install
 ```
+
+## Sankeerthan
+
+### Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/preethamgoud9/Sankeethan.git
+   ```
+2. Navigate to the project directory:
+   ```bash
+   cd Sankeerthan
+   ```
+3. Install the required dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
 ## Usage
 
@@ -53,46 +75,28 @@ poetry run get-papers-list "cancer immunotherapy" --max-results 50
 
 ### Example Queries
 
-PubMed supports complex queries. Here are some examples:
+PubMed supports complex queries:
 
 - Simple keyword search: `"cancer"`
-- Multiple keywords: `"cancer immunotherapy"`
-- Author search: `"Smith J[Author]"`
-- Date range: `"2020[pdat]:2023[pdat]"`
-- Journal search: `"Nature[Journal]"`
-- Combining terms: `"cancer AND immunotherapy AND 2020[pdat]:2023[pdat]"`
+- Multiple keywords: `
 
-## Project Structure
+### Sankeerthan Usage
 
-- `pubmed_papers/`
-  - `__init__.py`: Package initialization
-  - `cli.py`: Command-line interface
-  - `pubmed_client.py`: Client for the PubMed API
-  - `affiliation_classifier.py`: Logic for identifying non-academic affiliations
-  - `paper_processor.py`: Processing paper data
-  - `csv_formatter.py`: Formatting results as CSV
+To process PubMed papers, run the following scripts:
 
-## Development
+1. **Fetch Papers**:
+   ```bash
+   python pubmed_papers/pubmed_client.py
+   ```
+2. **Process Papers**:
+   ```bash
+   python pubmed_papers/paper_processor.py
+   ```
+3. **Format Results**:
+   ```bash
+   python pubmed_papers/csv_formatter.py
+   ```
 
-### Running Tests
+## Output
 
-```bash
-poetry run pytest
-```
-
-### Type Checking
-
-```bash
-poetry run mypy pubmed_papers
-```
-
-### Code Formatting
-
-```bash
-poetry run black pubmed_papers
-```
-
-## Tools Used
-
-- [Poetry](https://python-poetry.org/): Dependency management and packaging
-- [PubMed API (E-utilities)](https://www.# Sankeethan
+The processed results will be saved in `results.csv`.

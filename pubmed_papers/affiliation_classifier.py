@@ -68,7 +68,8 @@ class AffiliationClassifier:
             # Use word boundary to avoid partial matches
             if re.search(r'\b' + re.escape(keyword) + r'\b', affiliation_lower):
                 # Check if it's not a university company/corporation
-                if not any(academic in affiliation_lower for academic in self.ACADEMIC_KEYWORDS):
+                if not any(re.search(r'\b' + re.escape(academic) + r'\b', affiliation_lower) 
+                          for academic in self.ACADEMIC_KEYWORDS):
                     return True
         
         # Check for email domains that suggest companies
@@ -112,9 +113,16 @@ class AffiliationClassifier:
         if company_pattern:
             return company_pattern.group(0).strip()
         
+        # Look for company names in the affiliation text
+        parts = [p.strip() for p in affiliation.split(',')]
+        for part in parts:
+            part_lower = part.lower()
+            if any(keyword in part_lower for keyword in self.COMPANY_KEYWORDS) and \
+               not any(academic in part_lower for academic in self.ACADEMIC_KEYWORDS):
+                return part.strip()
+        
         # If no clear company name is found, return the first part of the affiliation
         # This is a fallback and might not be accurate
-        parts = affiliation.split(',')
         if parts:
             return parts[0].strip()
             

@@ -2,7 +2,7 @@
 Module for processing paper data from PubMed.
 """
 import logging
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any, Optional, Set
 
 from .pubmed_client import PubMedClient
 from .affiliation_classifier import AffiliationClassifier
@@ -83,7 +83,7 @@ class PaperProcessor:
             "title": paper_details.get("title", ""),
             "publication_date": paper_details.get("publication_date", ""),
             "non_academic_authors": [],
-            "company_affiliations": set(),
+            "company_affiliations": set(),  # Using a set to avoid duplicates
             "corresponding_author_email": paper_details.get("corresponding_author_email", "")
         }
         

@@ -46,13 +46,10 @@ class PubMedClient:
         """
         self.logger.debug(f"Searching for papers with query: {query}")
         
-        # URL encode the query
-        encoded_query = urllib.parse.quote_plus(query)
-        
         # Build the search URL
         params = {
             "db": "pubmed",
-            "term": encoded_query,
+            "term": query,
             "retmode": "json",
             "retmax": max_results,
             "usehistory": "y",
@@ -188,6 +185,21 @@ class PubMedClient:
                     if author_data.get("is_corresponding", False) and author_data.get("email"):
                         result["corresponding_author_email"] = author_data["email"]
         
+        # Look for emails in the article if not found in authors
+        if not result["corresponding_author_email"]:
+            # Try to find in the article
+            article = pubmed_article.find(".//Article")
+            if article is not None:
+                for elem in article.iter():
+                    if elem.text and "@" in elem.text and "." in elem.text:
+                        words = elem.text.split()
+                        for word in words:
+                            if "@" in word:
+                                # Clean up email
+                                email = word.strip(".,;:()")
+                                result["corresponding_author_email"] = email
+                                break
+        
         return result
         
     def _parse_author(self, author_elem: ET.Element) -> Dict[str, Any]:
@@ -239,6 +251,11 @@ class PubMedClient:
                         author_data["email"] = email
                         # Assume authors with emails are corresponding authors
                         author_data["is_corresponding"] = True
+        
+        # Check if the author is explicitly marked as a corresponding author
+        corresponding_author = author_elem.find(".//EqualContrib")
+        if corresponding_author is not None:
+            author_data["is_corresponding"] = True
         
         # If no full name available, use initials
         if not author_data["first_name"] and author_data["initials"]:
